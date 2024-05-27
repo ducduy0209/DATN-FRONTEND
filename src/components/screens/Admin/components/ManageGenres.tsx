@@ -70,6 +70,7 @@ const emptySelectedGenre: Category = {
   priority: 0,
   name: "",
   slug: "",
+  id: ""
 }
 
 const ManageGenres = () => {
@@ -300,7 +301,7 @@ const ManageGenres = () => {
                 {(item) => (
                   <TableRow key={item.id}>
                     <TableCell>
-                      <Link href={`/book/${item.slug}`} className="text-black hover:text-gray-600">
+                      <Link href={`/category/${item.slug}`} className="text-black hover:text-gray-600">
                         {item.name}
                       </Link>
                     </TableCell>

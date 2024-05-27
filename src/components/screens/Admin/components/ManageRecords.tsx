@@ -351,7 +351,9 @@ const ManageRecords = () => {
                 {(item) => (
                   <TableRow key={item.id}>
                     <TableCell>
-                      <Chip>{item.book_id?.title}</Chip>
+                      <Link href={`/book/${item.book_id.slug}`} className="text-black hover:text-gray-600">
+                        {item.book_id?.title}
+                      </Link>
                     </TableCell>
                     <TableCell>{item.duration === 'forever' ? "Vĩnh viễn" : item.duration.replaceAll(/\bmonths?\b/gi, "tháng")}</TableCell>
                     <TableCell>{moment(item.borrow_date).locale('vi').format('DD/MM/YYYY')}</TableCell>

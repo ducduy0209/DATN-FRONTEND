@@ -59,6 +59,12 @@ export const SidebarWrapper = memo(() => {
                 icon={<Icon name="ticket" />}
                 href="/admin/manage-coupons"
               />
+              <SidebarItem
+                isActive={pathname === "/admin/manage-reviews"}
+                title="Quản lý bình luận"
+                icon={<Icon name="view" />}
+                href="/admin/manage-reviews"
+              />
             </SidebarMenu>
             <SidebarMenu title="Thống kê">
             <SidebarItem

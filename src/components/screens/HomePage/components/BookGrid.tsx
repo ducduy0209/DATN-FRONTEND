@@ -36,15 +36,15 @@ export function BookGrid({ banners }: Props) {
   return (
     <div className="w-full py-2 pl-4">
       <div className="mb-4 flex w-full">
-        <div className="relative mr-4 h-[420px] w-[540px] px-4">
-          <Slider {...SETTINGS} className="z-1 h-full w-[500px]">
+        <div className="relative mr-4 h-[420px] w-[960px] px-4">
+          <Slider {...SETTINGS} className="z-1 h-full w-[920px]">
             {banners?.length &&
               banners.map((image) => (
                 <Image
                   key={image.id}
                   src={`http://localhost:3000/img/banners/${image.image}`}
                   alt="image"
-                  className="h-[420px]"
+                  className="h-[420px] w-full"
                 />
               ))}
           </Slider>

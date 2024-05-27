@@ -20,7 +20,7 @@ const ReviewItem = ({ review, handleSelectReview }: Props) => {
       <div className="my-4 w-[calc(100%-32px)] rounded-lg bg-gray-200 px-4 py-2">
         <div className="flex items-center justify-between">
           <div className="mb-2 flex items-center gap-2">
-            <Avatar src={review.user_id.image} alt={review.user_id.name} />
+            <Avatar src={`http://localhost:3000/img/users/${review.user_id.image}`} alt={review.user_id.name} />
             <div>
               <p>{review.user_id.name}</p>
               <div className="w-fit">
