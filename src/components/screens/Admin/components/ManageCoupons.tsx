@@ -385,7 +385,7 @@ const ManageCoupons = () => {
                     </TableCell>
                     <TableCell>{item.quantity}</TableCell>
                     <TableCell>{item.remaining_amount}</TableCell>
-                    <TableCell>{moment(item.expiredAt).format('DD/MM/YYYY')}</TableCell>
+                    <TableCell>{item.expiredAt ? moment(item.expiredAt).format('DD/MM/YYYY') : "Vĩnh viễn"}</TableCell>
                     <TableCell>{item.percent}%</TableCell>
                     <TableCell>${item.minimum_value}</TableCell>
                     <TableCell>

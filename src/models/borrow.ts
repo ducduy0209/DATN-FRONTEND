@@ -15,5 +15,5 @@ export type Borrow = {
   duration: string
   isExpired: boolean
   id: string
-  userId: User
+  user_id: User
 }

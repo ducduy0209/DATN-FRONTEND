@@ -1,15 +1,13 @@
 import { AdminLayout } from "@components/layouts/adminLayout"
 import { API_ENDPOINT } from "@models/api"
 import { useBoundStore } from "@zustand/total"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import { Response } from "@models/api"
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem, Image } from "@nextui-org/react"
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Image } from "@nextui-org/react"
 import { CustomButton } from "@components/common/CustomButton"
 import Icon from "@components/icons"
 import { useRouter } from "next/router"
-import RateStar from "@components/common/RateStar"
 import { Link } from "@nextui-org/react"
-import { ROLE_ACCOUNT } from "@models/user"
 import { NOTIFICATION_TYPE, notify } from "@utils/notify"
 
 type Analytics = {
@@ -43,6 +41,15 @@ enum TIME {
   "30DAYSAGO" = "30-days-ago",
 }
 
+const timeLabels = {
+  [TIME.TODAY]: "Hôm nay",
+  [TIME.YESTERDAY]: "Hôm qua",
+  [TIME["3DAYSAGO"]]: "3 ngày trước",
+  [TIME["7DAYSAGO"]]: "7 ngày trước",
+  [TIME["14DAYSAGO"]]: "14 ngày trước",
+  [TIME["30DAYSAGO"]]: "30 ngày trước",
+}
+
 const AdminHomeScreen = () => {
   const route = useRouter()
   const [analytics, setAnalytics] = useState<Analytics>({
@@ -51,6 +58,7 @@ const AdminHomeScreen = () => {
     totalUsers: undefined,
   })
   const [time, setTime] = useState<TIME>(TIME.TODAY)
+  const timeRef = useRef(time)
   const [topSellerBooks, setTopSellerBooks] = useState<AnalyticsBook[]>()
   const [topBadBooks, setTopBadBooks] = useState<AnalyticsBook[]>()
 
@@ -59,7 +67,7 @@ const AdminHomeScreen = () => {
   }))
 
   const handleFetchAnalytics = async () => {
-    const response = await fetch(API_ENDPOINT + `/analysts?time=${time}`, {
+    const response = await fetch(API_ENDPOINT + `/analysts?time=${timeRef.current}`, {
       headers: {
         "Content-Type": "application/json",
         authorization: `Bearer ${authInfo.access?.token}`,
@@ -76,7 +84,8 @@ const AdminHomeScreen = () => {
   }, [time])
 
   useEffect(() => {
-    setInterval(handleFetchAnalytics, 10000)
+    const intervalId = setInterval(handleFetchAnalytics, 10000)
+    return () => clearInterval(intervalId)
   }, [])
 
   useEffect(() => {
@@ -111,19 +120,24 @@ const AdminHomeScreen = () => {
     handleFetchTopBadBooks()
   }, [])
 
+  const handleTimeChange = (newTime: TIME) => {
+    setTime(newTime)
+    timeRef.current = newTime
+  }
+
   return (
     <AdminLayout>
       <div className="px-20 py-8">
         <Dropdown>
           <DropdownTrigger>
             <CustomButton variant="bordered" className="uppercase" endContent={<Icon name="chevron-down" />}>
-              {time.replaceAll("-", " ")}
+              {timeLabels[time]}
             </CustomButton>
           </DropdownTrigger>
           <DropdownMenu aria-label="Static Actions" className="capitalize">
             {Object.values(TIME).map((item) => (
-              <DropdownItem key={item} onClick={() => setTime(item)}>
-                {item.replaceAll("-", " ")}
+              <DropdownItem key={item} onClick={() => handleTimeChange(item)}>
+                {timeLabels[item]}
               </DropdownItem>
             ))}
           </DropdownMenu>

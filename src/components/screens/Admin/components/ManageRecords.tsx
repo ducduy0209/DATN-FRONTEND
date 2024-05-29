@@ -64,7 +64,9 @@ type BookSelected = {
 }
 
 const columns: Column[] = [
+  { name: "MÃ GIAO DỊCH", uid: "id" },
   { name: "TÊN SÁCH", uid: "title" },
+  { name: "NGƯỜI MUA", uid: "user_id" },
   { name: "THỜI HẠN", uid: "duration" },
   { name: "NGÀY GIAO DỊCH", uid: "borrow_date" },
   { name: "GIÁ", uid: "price" },
@@ -350,11 +352,13 @@ const ManageRecords = () => {
               <TableBody items={records.results}>
                 {(item) => (
                   <TableRow key={item.id}>
+                    <TableCell>{item.id}</TableCell>
                     <TableCell>
                       <Link href={`/book/${item.book_id.slug}`} className="text-black hover:text-gray-600">
                         {item.book_id?.title}
                       </Link>
                     </TableCell>
+                    <TableCell>{item.user_id?.name}</TableCell>
                     <TableCell>{item.duration === 'forever' ? "Vĩnh viễn" : item.duration.replaceAll(/\bmonths?\b/gi, "tháng")}</TableCell>
                     <TableCell>{moment(item.borrow_date).locale('vi').format('DD/MM/YYYY')}</TableCell>
                     <TableCell>${item.price}</TableCell>

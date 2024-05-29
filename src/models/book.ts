@@ -25,7 +25,7 @@ export type Book = {
       price: number
     },
   ]
-  languange: BOOK_LANGUAGES
+  language: BOOK_LANGUAGES
   rating: number
   price: number
   access_status: ACCESS_STATUS
