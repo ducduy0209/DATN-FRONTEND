@@ -84,6 +84,8 @@ const ManageRecords = () => {
   const [page, setPage] = useState<number>(1)
   const [records, setRecords] = useState<DataWithPagination<Borrow[]>>()
   const [limit, setLimit] = useState<number>(5)
+  const [startDate, setStartDate] = useState<string | null>(null)
+  const [endDate, setEndDate] = useState<string | null>(null)
   const [isStaleData, setIsStaleData] = useState<boolean>(false)
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure()
   const [recordSelected, setRecordSelected] = useState<CreateRecord>({
@@ -102,23 +104,29 @@ const ManageRecords = () => {
     setPage(1)
   }
 
-  useEffect(() => {
-    const handleFetchRecords = async () => {
-      let params = `/borrow-records?page=${page}&limit=${limit}`
-      if (search) {
-        params += `&title=${search}`
-      }
-      const response = await fetch(API_ENDPOINT + params, {
-        headers: {
-          authorization: `Bearer ${authInfo?.access?.token}`,
-        },
-      })
-      const raw = (await response.json()) as Response<any>
-      console.log(raw)
-      if (raw.status === "success" && raw?.data?.result) {
-        setRecords(raw.data.result)
-      }
+  const handleFetchRecords = async () => {
+    let params = `/borrow-records?page=${page}&limit=${limit}`
+    if (search) {
+      params += `&title=${search}`
     }
+    if (startDate) {
+      params += `&from=${startDate}`
+    }
+    if (endDate) {
+      params += `&to=${endDate}`
+    }
+    const response = await fetch(API_ENDPOINT + params, {
+      headers: {
+        authorization: `Bearer ${authInfo?.access?.token}`,
+      },
+    })
+    const raw = (await response.json()) as Response<any>
+    console.log(raw)
+    if (raw.status === "success" && raw?.data?.result) {
+      setRecords(raw.data.result)
+    }
+  }
+  useEffect(() => {
     handleFetchRecords()
   }, [search, isStaleData, page, limit])
 
@@ -129,6 +137,10 @@ const ManageRecords = () => {
       ...recordSelected,
       [name]: value,
     })
+  }
+
+  const handleDateChange = () => {
+    handleFetchRecords()
   }
 
   const handleCloseModal = () => {
@@ -329,8 +341,22 @@ const ManageRecords = () => {
         </ModalContent>
       </Modal>
       <div className="px-8 py-4">
-        <div className="mb-8 flex items-center gap-4">
-          <Input/>
+        <div className="mb-8 flex justify-between items-center gap-4">
+        <div className="flex gap-4 items-center">
+            <Input
+              type="date"
+              placeholder="Từ ngày"
+              value={startDate || ""}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <Input
+              type="date"
+              placeholder="Đến ngày"
+              value={endDate || ""}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+            <CustomButton color="green" onClick={handleDateChange} className="pl-8 pr-8">Thống kê</CustomButton>
+          </div>
           <CustomButton color="green" onClick={onOpen}>
             Thêm mới
           </CustomButton>

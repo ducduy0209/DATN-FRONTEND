@@ -3,12 +3,13 @@ import { API_ENDPOINT } from "@models/api"
 import { useBoundStore } from "@zustand/total"
 import React, { useEffect, useState, useRef } from "react"
 import { Response } from "@models/api"
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Image } from "@nextui-org/react"
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Image, Input, Button } from "@nextui-org/react"
 import { CustomButton } from "@components/common/CustomButton"
 import Icon from "@components/icons"
 import { useRouter } from "next/router"
 import { Link } from "@nextui-org/react"
 import { NOTIFICATION_TYPE, notify } from "@utils/notify"
+import moment from "moment"
 
 type Analytics = {
   totalRevenue?: number
@@ -48,6 +49,7 @@ const timeLabels = {
   [TIME["7DAYSAGO"]]: "7 ngày trước",
   [TIME["14DAYSAGO"]]: "14 ngày trước",
   [TIME["30DAYSAGO"]]: "30 ngày trước",
+  "NOTSET": ""
 }
 
 const AdminHomeScreen = () => {
@@ -57,7 +59,9 @@ const AdminHomeScreen = () => {
     totalBooks: undefined,
     totalUsers: undefined,
   })
-  const [time, setTime] = useState<TIME>(TIME.TODAY)
+  const [time, setTime] = useState<TIME | null>(TIME.TODAY)
+  const [startDate, setStartDate] = useState<string | null>(null)
+  const [endDate, setEndDate] = useState<string | null>(null)
   const timeRef = useRef(time)
   const [topSellerBooks, setTopSellerBooks] = useState<AnalyticsBook[]>()
   const [topBadBooks, setTopBadBooks] = useState<AnalyticsBook[]>()
@@ -67,7 +71,16 @@ const AdminHomeScreen = () => {
   }))
 
   const handleFetchAnalytics = async () => {
-    const response = await fetch(API_ENDPOINT + `/analysts?time=${timeRef.current}`, {
+    let url = `${API_ENDPOINT}/analysts?`
+    if (startDate) {
+      url += `from=${startDate}&`
+    }
+    if (endDate) {
+      url += `to=${endDate}`
+    } else {
+      url += `time=${timeRef.current}`
+    }
+    const response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
         authorization: `Bearer ${authInfo.access?.token}`,
@@ -83,10 +96,10 @@ const AdminHomeScreen = () => {
     handleFetchAnalytics()
   }, [time])
 
-  useEffect(() => {
-    const intervalId = setInterval(handleFetchAnalytics, 10000)
-    return () => clearInterval(intervalId)
-  }, [])
+  // useEffect(() => {
+  //   const intervalId = setInterval(handleFetchAnalytics, 10000)
+  //   return () => clearInterval(intervalId)
+  // }, [])
 
   useEffect(() => {
     const handleFetchTopSellerBooks = async () => {
@@ -123,25 +136,50 @@ const AdminHomeScreen = () => {
   const handleTimeChange = (newTime: TIME) => {
     setTime(newTime)
     timeRef.current = newTime
+    setStartDate(null)
+    setEndDate(null)
+  }
+
+  const handleDateChange = () => {
+    setTime(null)
+    timeRef.current = null
+    handleFetchAnalytics()
   }
 
   return (
     <AdminLayout>
       <div className="px-20 py-8">
-        <Dropdown>
-          <DropdownTrigger>
-            <CustomButton variant="bordered" className="uppercase" endContent={<Icon name="chevron-down" />}>
-              {timeLabels[time]}
-            </CustomButton>
-          </DropdownTrigger>
-          <DropdownMenu aria-label="Static Actions" className="capitalize">
-            {Object.values(TIME).map((item) => (
-              <DropdownItem key={item} onClick={() => handleTimeChange(item)}>
-                {timeLabels[item]}
-              </DropdownItem>
-            ))}
-          </DropdownMenu>
-        </Dropdown>
+        <div className="flex justify-between items-center">
+          <div className="flex gap-4 items-center">
+            <Input
+              type="date"
+              placeholder="Từ ngày"
+              value={startDate || ""}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <Input
+              type="date"
+              placeholder="Đến ngày"
+              value={endDate || ""}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+            <CustomButton color="green" onClick={handleDateChange} className="pl-8 pr-8">Thống kê</CustomButton>
+          </div>
+          <Dropdown>
+            <DropdownTrigger>
+              <CustomButton variant="bordered" className="uppercase" endContent={<Icon name="chevron-down" />}>
+                {timeLabels[time || "NOTSET"]}
+              </CustomButton>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="Static Actions" className="capitalize">
+              {Object.values(TIME).map((item) => (
+                <DropdownItem key={item} onClick={() => handleTimeChange(item)}>
+                  {timeLabels[item]}
+                </DropdownItem>
+              ))}
+            </DropdownMenu>
+          </Dropdown>
+        </div>
         <div className="mt-4 flex justify-between gap-8">
           <div className="basis-1/3 rounded-lg bg-green-400 px-8 py-4 text-white">
             <p className="text-xl font-semibold">Tổng số sách đã bán</p>

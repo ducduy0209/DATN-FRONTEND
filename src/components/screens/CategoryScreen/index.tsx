@@ -99,9 +99,9 @@ const CategoryScreen = ({ category }: Props) => {
   useEffect(() => {
     if (category) {
       const handleFetchBooks = async () => {
-        let params = `/books/genres/${category}?`
+        let params = `/books/genres/${category}?page=${page}&limit=${LIMIT}`
         if (price?.from) {
-          params += `fromPrice=${price.from}`
+          params += `&fromPrice=${price.from}`
         }
         if (price?.to) {
           params += `&toPrice=${price.to}`
@@ -122,7 +122,7 @@ const CategoryScreen = ({ category }: Props) => {
       }
       handleFetchBooks()
     }
-  }, [category, sortBy, sortType, lang, price])
+  }, [category, sortBy, sortType, lang, price, page]) // Thêm page vào dependency array
 
   const fetchCategories = async (page: number) => {
     const response = await fetch(API_ENDPOINT + `/genres?page=${page}&limit=8`, {
@@ -164,7 +164,7 @@ const CategoryScreen = ({ category }: Props) => {
   }
 
   const showLessCategories = () => {
-    setCategories(initialCategories) // Reset to initial categories
+    setCategories(initialCategories)
     setCategoryPage(1)
     setIsExpanded(false)
   }
@@ -278,7 +278,7 @@ const CategoryScreen = ({ category }: Props) => {
               className="mt-4"
               showControls
               total={books.totalPages}
-              initialPage={page}
+              page={page}
               onChange={(pageChanged: number) => setPage(pageChanged)}
             />
           ) : (
