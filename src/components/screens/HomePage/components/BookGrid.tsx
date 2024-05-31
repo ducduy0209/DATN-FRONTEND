@@ -57,7 +57,7 @@ export function BookGrid({ banners }: Props) {
               <Image
                 src={`http://localhost:3000/img/books/${books[0]?.cover_image}`}
                 alt={books[0]?.title}
-                className="mx-auto h-[330px]"
+                className="mx-auto h-[306px]"
               />
             }
             onClick={() => route.push(`/book/${books[0].slug}`)}

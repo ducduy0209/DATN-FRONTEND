@@ -75,19 +75,19 @@ const BookScreen = ({ id }: Props) => {
     setRating(reviewSelected.rating)
   }
 
-  useEffect(() => {
-    const handleFetchReviews = async () => {
-      const response = await fetch(API_ENDPOINT + `/books/${book?.id}/reviews?limit=8&page=${page}`, {
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${authInfo?.access?.token}`,
-        },
-      })
-      const raw = (await response.json()) as Response<DataWithPagination<Review[]>>
-      if (raw.data?.results) {
-        setReviews(raw.data)
-      }
+  const handleFetchReviews = async () => {
+    const response = await fetch(API_ENDPOINT + `/books/${book?.id}/reviews?limit=8&page=${page}`, {
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${authInfo?.access?.token}`,
+      },
+    })
+    const raw = (await response.json()) as Response<DataWithPagination<Review[]>>
+    if (raw.data?.results) {
+      setReviews(raw.data)
     }
+  }
+  useEffect(() => {
     if (book?.id) {
       handleFetchReviews()
     }
@@ -140,6 +140,7 @@ const BookScreen = ({ id }: Props) => {
       } else {
         notify(NOTIFICATION_TYPE.SUCCESS, "Bình luận thành công")
         setIsPreview(!isPreview)
+        handleFetchReviews()
       }
     } else {
       setIsCommentNull(true)
