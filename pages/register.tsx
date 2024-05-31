@@ -52,7 +52,7 @@ const Register = () => {
       notify(NOTIFICATION_TYPE.ERROR, raw?.message ?? "<Som></Som>ething error happen, try again!")
     } else {
       setTimeout(() => {
-        notify(NOTIFICATION_TYPE.SUCCESS, `Register new account successfully. Please verify account!`)
+        notify(NOTIFICATION_TYPE.SUCCESS, `Đăng ký tài khoản thành công, hãy xác thực tài khoản của bạn!`)
       }, 500)
       saveAuthInfo(raw.data.tokens)
       saveAccountInfo(raw.data.user)

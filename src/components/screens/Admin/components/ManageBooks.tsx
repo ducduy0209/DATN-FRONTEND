@@ -239,8 +239,9 @@ const ManageBooks = () => {
     });
     if (response.status === 201) {
       notify(NOTIFICATION_TYPE.SUCCESS, 'Tạo sách thành công');
-      onClose()
       setIsStaleData(!isStaleData);
+      handleCloseModal();
+      onClose()
     } else {
       const raw = (await response.json()) as Response<any>;
       notify(NOTIFICATION_TYPE.ERROR, raw.message ? raw.message : 'Có lỗi xảy ra, vui lòng thử lại');
