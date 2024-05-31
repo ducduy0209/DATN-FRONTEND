@@ -344,7 +344,7 @@ const BookScreen = ({ id }: Props) => {
               </div>
               <div>
                 <span className="font-semibold">- Ngôn ngữ: </span>
-                <span>{detectLanguage(book?.languange)}</span>
+                <span>{detectLanguage(book?.language)}</span>
               </div>
             </div>
           </div>
