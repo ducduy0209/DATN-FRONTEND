@@ -3,7 +3,7 @@ import { API_ENDPOINT } from "@models/api"
 import { useBoundStore } from "@zustand/total"
 import React, { useEffect, useState, useRef } from "react"
 import { Response } from "@models/api"
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Image, Input, Button } from "@nextui-org/react"
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Image, Input, Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react"
 import { CustomButton } from "@components/common/CustomButton"
 import Icon from "@components/icons"
 import { useRouter } from "next/router"
@@ -54,6 +54,8 @@ const timeLabels = {
 
 const AdminHomeScreen = () => {
   const route = useRouter()
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure()
+  const [issuer, setIssuer] = useState<string>("")
   const [analytics, setAnalytics] = useState<Analytics>({
     totalRevenue: undefined,
     totalBooks: undefined,
@@ -95,11 +97,6 @@ const AdminHomeScreen = () => {
   useEffect(() => {
     handleFetchAnalytics()
   }, [time])
-
-  // useEffect(() => {
-  //   const intervalId = setInterval(handleFetchAnalytics, 10000)
-  //   return () => clearInterval(intervalId)
-  // }, [])
 
   useEffect(() => {
     const handleFetchTopSellerBooks = async () => {
@@ -146,6 +143,57 @@ const AdminHomeScreen = () => {
     handleFetchAnalytics()
   }
 
+  const handleExportReport = async () => {
+    if (!issuer || !startDate || !endDate) {
+      if (!issuer) notify(NOTIFICATION_TYPE.ERROR, "Vui lòng nhập tên người xuất báo cáo")
+      if (!startDate) notify(NOTIFICATION_TYPE.ERROR, "Vui lòng chọn ngày bắt đầu")
+      if (!endDate) notify(NOTIFICATION_TYPE.ERROR, "Vui lòng chọn ngày kết thúc")
+      return
+    }
+
+    const response = await fetch(`${API_ENDPOINT}/analysts/exports-analysts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${authInfo.access?.token}`,
+      },
+      body: JSON.stringify({
+        issuer,
+        from: startDate,
+        to: endDate,
+      }),
+    })
+    if (response.status === 200) {
+      const blob = await response.blob()
+      const contentDisposition = response.headers.get("Content-Disposition")
+      let fileName = `Bao_cao_thong_ke_${issuer}_ngay_${moment().format("DD/MM/YYYY")}.pdf`
+      if (contentDisposition) {
+        const matches = /filename="([^"]+)"/.exec(contentDisposition)
+        if (matches && matches[1]) {
+          fileName = matches[1]
+        }
+      }
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      document.body.appendChild(a)
+      a.download = fileName
+      a.click()
+      a.remove()
+      notify(NOTIFICATION_TYPE.SUCCESS, "Xuất báo cáo thành công")
+      resetForm()
+      onClose()
+    } else {
+      notify(NOTIFICATION_TYPE.ERROR, "Có lỗi xảy ra, vui lòng thử lại")
+    }
+  }
+
+  const resetForm = () => {
+    setIssuer("")
+    setStartDate(null)
+    setEndDate(null)
+  }
+
   return (
     <AdminLayout>
       <div className="px-20 py-8">
@@ -165,20 +213,23 @@ const AdminHomeScreen = () => {
             />
             <CustomButton color="green" onClick={handleDateChange} className="pl-8 pr-8">Thống kê</CustomButton>
           </div>
-          <Dropdown>
-            <DropdownTrigger>
-              <CustomButton variant="bordered" className="uppercase" endContent={<Icon name="chevron-down" />}>
-                {timeLabels[time || "NOTSET"]}
-              </CustomButton>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="Static Actions" className="capitalize">
-              {Object.values(TIME).map((item) => (
-                <DropdownItem key={item} onClick={() => handleTimeChange(item)}>
-                  {timeLabels[item]}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </Dropdown>
+          <div className="flex gap-4 items-center">
+            <Dropdown>
+              <DropdownTrigger>
+                <CustomButton variant="bordered" className="uppercase" endContent={<Icon name="chevron-down" />}>
+                  {timeLabels[time || "NOTSET"]}
+                </CustomButton>
+              </DropdownTrigger>
+              <DropdownMenu aria-label="Static Actions" className="capitalize">
+                {Object.values(TIME).map((item) => (
+                  <DropdownItem key={item} onClick={() => handleTimeChange(item)}>
+                    {timeLabels[item]}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+            <CustomButton color="green" onClick={onOpen}>Xuất báo cáo</CustomButton>
+          </div>
         </div>
         <div className="mt-4 flex justify-between gap-8">
           <div className="basis-1/3 rounded-lg bg-green-400 px-8 py-4 text-white">
@@ -265,6 +316,45 @@ const AdminHomeScreen = () => {
           </div>
         </div>
       </div>
+      <Modal isOpen={isOpen} onClose={() => { resetForm(); onClose(); }} onOpenChange={onOpenChange} placement="center">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Xuất báo cáo</ModalHeader>
+              <ModalBody>
+                <Input
+                  label="Người xuất báo cáo"
+                  placeholder="Nhập tên người xuất báo cáo"
+                  value={issuer}
+                  onChange={(e) => setIssuer(e.target.value)}
+                />
+                <Input
+                  type="date"
+                  label="Từ ngày"
+                  placeholder="Từ ngày"
+                  value={startDate || ""}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+                <Input
+                  type="date"
+                  label="Đến ngày"
+                  placeholder="Đến ngày"
+                  value={endDate || ""}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={() => { resetForm(); onClose(); }}>
+                  Đóng
+                </Button>
+                <CustomButton color="green" onPress={handleExportReport}>
+                  Xuất
+                </CustomButton>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </AdminLayout>
   )
 }

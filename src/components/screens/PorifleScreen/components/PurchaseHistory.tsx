@@ -44,8 +44,9 @@ const columns = [
 
 const PurchaseHistory = () => {
   const route = useRouter()
-  const { authInfo } = useBoundStore((state) => ({
+  const { authInfo, accountInfo } = useBoundStore((state) => ({
     authInfo: state.authInfo,
+    accountInfo: state.accountInfo
   }))
 
   const [borrows, setBorrows] = useState<DataWithPagination<Borrow[]>>()
@@ -53,7 +54,7 @@ const PurchaseHistory = () => {
 
   useEffect(() => {
     const handleFetchBorrows = async () => {
-      const response = await fetch(API_ENDPOINT + `/borrow-records?page=${page}`, {
+      const response = await fetch(API_ENDPOINT + `/users/${accountInfo?.id}/records?page=${page}`, {
         headers: { "Content-Type": "application/json", authorization: `Bearer ${authInfo.access?.token}` },
       })
       const data = (await response.json()) as Response<any>

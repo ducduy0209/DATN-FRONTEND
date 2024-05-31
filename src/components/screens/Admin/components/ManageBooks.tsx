@@ -239,6 +239,7 @@ const ManageBooks = () => {
     });
     if (response.status === 201) {
       notify(NOTIFICATION_TYPE.SUCCESS, 'Tạo sách thành công');
+      onClose()
       setIsStaleData(!isStaleData);
     } else {
       const raw = (await response.json()) as Response<any>;
